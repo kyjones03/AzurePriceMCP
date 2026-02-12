@@ -176,6 +176,26 @@ const tools: Tool[] = [
       },
     },
   },
+  {
+    name: "get_services_by_family",
+    description:
+      "Get the list of available services and product types within a specific Azure service family. Useful for discovering what resources are available before querying prices.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        serviceFamily: {
+          type: "string",
+          description:
+            "The service family to explore (e.g., 'Compute', 'Storage', 'Databases').",
+        },
+        maxResults: {
+          type: "number",
+          description: "Maximum number of price records to scan (default: 500). Higher values give more complete results but take longer.",
+        },
+      },
+      required: ["serviceFamily"],
+    },
+  },
 ];
 
 // Build OData filter string
@@ -398,6 +418,48 @@ async function handleToolCall(
         result += `### ${sku}\n`;
         for (const p of prices) {
           result += `- ${p.reservationTerm || "N/A"}: ${p.retailPrice} ${p.currencyCode} - ${p.location} (${p.productName})\n`;
+        }
+        result += "\n";
+      }
+
+      return result;
+    }
+
+    case "get_services_by_family": {
+      const serviceFamily = args.serviceFamily as string;
+      if (!SERVICE_FAMILIES.includes(serviceFamily)) {
+        return `Unknown service family: "${serviceFamily}". Use get_service_families to see valid options.`;
+      }
+
+      const maxResults = Math.min((args.maxResults as number) || 500, 2000);
+      const items = await fetchWithPagination({ serviceFamily }, maxResults);
+
+      if (items.length === 0) {
+        return `No services found for service family: ${serviceFamily}`;
+      }
+
+      // Extract unique services and products
+      const services = new Map<string, Set<string>>();
+      for (const item of items) {
+        if (!services.has(item.serviceName)) {
+          services.set(item.serviceName, new Set());
+        }
+        services.get(item.serviceName)!.add(item.productName);
+      }
+
+      let result = `## Services in "${serviceFamily}" Family\n\n`;
+      result += `Found ${services.size} service(s) from ${items.length} price records:\n\n`;
+
+      const sortedServices = [...services.entries()].sort((a, b) => a[0].localeCompare(b[0]));
+      for (const [serviceName, products] of sortedServices) {
+        result += `### ${serviceName}\n`;
+        result += `Products (${products.size}):\n`;
+        const sortedProducts = [...products].sort().slice(0, 20);
+        for (const product of sortedProducts) {
+          result += `- ${product}\n`;
+        }
+        if (products.size > 20) {
+          result += `- ... and ${products.size - 20} more\n`;
         }
         result += "\n";
       }
