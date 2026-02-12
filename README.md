@@ -54,6 +54,7 @@ Once configured, the Azure Pricing tools will be available to GitHub Copilot in 
 - *"Compare VM prices between eastus and westeurope."*
 - *"Show me reservation pricing for SQL Database in eastus."*
 - *"What Azure service families are available?"*
+- *"What resources exist in the developer tools service family?"*
 
 ## Example Queries
 
@@ -72,6 +73,10 @@ Once configured, the Azure Pricing tools will be available to GitHub Copilot in 
 ### Filter by service family
 
 > "List storage prices in eastus under $0.05 per GB."
+
+### Show resources in a service family
+
+> "List the resources in the compute family."
 
 ## License
 
