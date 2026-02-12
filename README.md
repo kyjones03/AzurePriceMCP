@@ -10,6 +10,7 @@ A [Model Context Protocol (MCP)](https://modelcontextprotocol.io/) server that p
 | `compare_vm_prices` | Compare Virtual Machine prices across regions or between SKU sizes for cost optimization. |
 | `get_service_families` | List all available Azure service families (Compute, Storage, Databases, Networking, etc.). |
 | `get_reservation_prices` | Get 1-year and 3-year reserved instance pricing for any service or SKU. |
+| `get_service_families` | List resources within a select service family. |
 
 ## Setup
 
